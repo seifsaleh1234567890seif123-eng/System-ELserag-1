@@ -1,0 +1,125 @@
+/* Custom styles for Al-Mohandess PlayStation Management System */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap');
+
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --ps-blue: #003791;
+    --ps-accent: #0070d1;
+    --dark-bg: #0f172a;
+    --card-bg: #1e293b;
+}
+
+body {
+    font-family: 'Cairo', sans-serif;
+    background-color: #f8fafc;
+    color: #1e293b;
+    direction: rtl;
+    text-align: right;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Glassmorphism effects */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.dark-glass {
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+/* PlayStation styled gradient badge */
+.ps-gradient-header {
+    background: linear-gradient(135deg, #001e4d 0%, #003791 50%, #0070d1 100%);
+}
+
+.ps-accent-gradient {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%);
+}
+
+.admin-gradient-header {
+    background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 50%, #6366f1 100%);
+}
+
+/* Subtle pulse for low stock */
+@keyframes pulse-subtle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.pulse-badge {
+    animation: pulse-subtle 2s infinite;
+}
+
+/* Print styling for invoices */
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 8mm;
+    }
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+    header, nav, #bundle-modal, #add-modal, #branch-login-box, #admin-login-box, .no-print, button {
+        display: none !important;
+    }
+    #invoice-modal {
+        display: block !important;
+        position: static !important;
+        background: #ffffff !important;
+        backdrop-filter: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-height: none !important;
+        overflow: visible !important;
+        box-shadow: none !important;
+    }
+    #invoice-modal > div {
+        max-width: 100% !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+    #invoice-print-area {
+        display: block !important;
+        width: 100% !important;
+        border: 1px solid #1e293b !important;
+        padding: 15px !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        box-shadow: none !important;
+    }
+    #invoice-print-area * {
+        color: #000000 !important;
+        border-color: #cbd5e1 !important;
+    }
+    .signature-table, .signature-table tr, .signature-table td {
+        border: none !important;
+        background: transparent !important;
+    }
+}
+

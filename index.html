@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المهندس - فرع السراج 1 خلفي</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- HTML2Canvas & HTML2PDF for direct PDF and image export without printer -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Firebase Realtime Cloud Sync -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="shared_system.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col antialiased">
+
+    <!-- Header -->
+    <header class="ps-gradient-header text-white shadow-lg sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3 space-x-reverse">
+                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/20">
+                        <i data-lucide="gamepad-2" class="w-6 h-6 text-emerald-300"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                            <span>المهندس</span>
+                            <span class="text-xs bg-emerald-500/40 text-emerald-100 px-2 py-0.5 rounded-full border border-emerald-400/30">الفرع الثاني</span>
+                        </h1>
+                        <p class="text-xs text-blue-200">نظام إدارة مبيعات وفواتير فرع السراج 1 خلفي</p>
+                    </div>
+                </div>
+
+                <div id="auth-header-badge" class="flex items-center gap-3 hidden">
+                    <div class="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/20">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="font-bold text-xs text-white">الفرع الثاني (نشط)</span>
+                    </div>
+                    <button onclick="branchLogout()" class="p-2 rounded-lg bg-red-500/20 hover:bg-red-500/40 text-red-100 border border-red-400/30 text-xs flex items-center gap-1">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                        <span>خروج</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- Login Screen -->
+        <div id="branch-login-box" class="max-w-md mx-auto py-12">
+            <div class="bg-white rounded-3xl p-8 shadow-xl border border-slate-200 text-center space-y-6">
+                <div class="w-20 h-20 mx-auto rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-inner">
+                    <i data-lucide="store" class="w-10 h-10"></i>
+                </div>
+                <div>
+                    <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-2">فرع 2</span>
+                    <h2 class="text-2xl font-black text-slate-800">تسجيل دخول الفرع الثاني</h2>
+                    <p class="text-xs text-slate-400 mt-1">أدخل كلمة المرور الخاصة بالفرع الثاني</p>
+                </div>
+
+                <div class="space-y-3">
+                    <input type="password" id="login-pass" placeholder="كلمة المرور..." class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-2xl text-center text-base focus:bg-white focus:outline-emerald-500 font-mono tracking-widest">
+                    <p id="login-err" class="text-xs text-red-500 hidden font-bold"></p>
+                    <button onclick="handleBranchLogin()" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-sm shadow-lg shadow-emerald-500/30 transition">
+                        دخول الفرع 🚀
+                    </button>
+                </div>
+                
+                <div class="pt-4 border-t text-[11px] text-slate-400">
+                    كلمة المرور الافتراضية للفرع الثاني: <code class="bg-slate-100 px-1 py-0.5 rounded font-bold text-slate-700">2222</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- Branch Main App (Hidden until login) -->
+        <div id="branch-app-box" class="hidden space-y-6">
+
+            <!-- Sub Nav Tabs -->
+            <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-2.5 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex items-center space-x-2 space-x-reverse">
+                    <button onclick="setTab('pos')" id="tab-btn-pos" class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition bg-emerald-600 text-white shadow-md">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        <span>نقطة البيع والفواتير (POS)</span>
+                    </button>
+                    <button onclick="setTab('inventory')" id="tab-btn-inventory" class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition text-slate-600 hover:bg-slate-100">
+                        <i data-lucide="package" class="w-4 h-4"></i>
+                        <span>مخزون الفرع الثاني</span>
+                    </button>
+                    <button onclick="setTab('invoices')" id="tab-btn-invoices" class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition text-slate-600 hover:bg-slate-100">
+                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                        <span>فواتير ومبيعات الفرع</span>
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button onclick="openAddModal()" class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span>+ إضافة جهاز / صنف لمخزون الفرع</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 1: POS -->
+            <div id="tab-content-pos" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Products Catalog -->
+                <div class="lg:col-span-7 xl:col-span-8 space-y-4">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex flex-wrap items-center gap-1.5" id="category-filter-btns">
+                            <button onclick="filterCat('all', this)" class="cat-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white">الكل</button>
+                            <button onclick="filterCat('ps4', this)" class="cat-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">أجهزة PS4</button>
+                            <button onclick="filterCat('ps5', this)" class="cat-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">أجهزة PS5</button>
+                            <button onclick="filterCat('controller_ps4_orig', this)" class="cat-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">دراعات PS4 أصلي</button>
+                            <button onclick="filterCat('controller_ps4_copy', this)" class="cat-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">دراعات PS4 كوبي</button>
+                            <button onclick="filterCat('controller_ps5_orig', this)" class="cat-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">دراعات PS5 أصلي</button>
+                            <button onclick="filterCat('controller_ps5_copy', this)" class="cat-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">دراعات PS5 كوبي</button>
+                        </div>
+                        <input type="text" id="catalog-search" onkeyup="renderCatalog()" placeholder="بحث في أجهزة ودراعات الفرع..." class="pl-3 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs min-w-[200px] flex-1">
+                    </div>
+
+                    <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Cart & Invoicing -->
+                <div class="lg:col-span-5 xl:col-span-4">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sticky top-24 space-y-4">
+                        <div class="flex items-center justify-between border-b pb-3">
+                            <h3 class="font-extrabold text-slate-800 flex items-center gap-2 text-base">
+                                <i data-lucide="receipt" class="w-5 h-5 text-emerald-600"></i>
+                                <span>فاتورة بيع وضمان</span>
+                            </h3>
+                            <button onclick="clearCart()" class="text-xs text-red-500 hover:underline">إفراغ الفاتورة</button>
+                        </div>
+
+                        <!-- Customer -->
+                        <div class="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200/60">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">اسم العميل *</label>
+                                <input type="text" id="cust-name" placeholder="اسم المشتري..." class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">رقم الهاتف</label>
+                                <input type="text" id="cust-phone" placeholder="010XXXXXXXX" class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg">
+                            </div>
+                        </div>
+
+                        <!-- Items in Cart -->
+                        <div class="space-y-2">
+                            <span class="text-xs font-bold text-slate-600">الأصناف المضافة بالفاتورة:</span>
+                            <div id="cart-list" class="max-h-60 overflow-y-auto space-y-2 pr-1">
+                                <!-- Dynamic -->
+                            </div>
+                        </div>
+
+                        <!-- Warranty & Payment -->
+                        <div class="pt-2 border-t space-y-2 text-xs">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">مدة الضمان</label>
+                                    <select id="cart-warranty" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg">
+                                        <option value="شهر واحد">شهر واحد</option>
+                                        <option value="3 شهور" selected>3 شهور</option>
+                                        <option value="6 شهور">6 شهور</option>
+                                        <option value="سنة كاملة">سنة كاملة</option>
+                                        <option value="بدون ضمان">بدون ضمان</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">طريقة الدفع</label>
+                                    <select id="cart-payment" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg">
+                                        <option value="cash">كاش نقدي</option>
+                                        <option value="vodafone_cash">فودافون كاش / إنستاباي</option>
+                                        <option value="visa">فيزا / بطاقة بنكية</option>
+                                        <option value="installments">تقسيط / آجل</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Totals -->
+                        <div class="pt-3 border-t space-y-2 text-xs">
+                            <div class="flex justify-between text-slate-600">
+                                <span>المجموع الفرعي:</span>
+                                <span id="summary-subtotal" class="font-bold">0 ج.م</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-600">الخصم:</span>
+                                <input type="number" id="summary-discount" value="0" min="0" oninput="recalcTotals()" class="w-24 text-center py-0.5 px-1 bg-slate-50 border border-slate-300 rounded font-bold text-red-600">
+                            </div>
+                            <div class="flex justify-between text-slate-800 font-extrabold text-sm pt-1 border-t">
+                                <span>الإجمالي المطلوب:</span>
+                                <span id="summary-total" class="text-emerald-600 font-black text-base">0 ج.م</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-600">المبلغ المدفوع:</span>
+                                <input type="number" id="summary-paid" value="0" min="0" oninput="recalcTotals()" class="w-24 text-center py-0.5 px-1 bg-slate-50 border border-slate-300 rounded font-bold text-emerald-600">
+                            </div>
+                            <div class="flex justify-between text-slate-600 font-semibold">
+                                <span>المتبقي:</span>
+                                <span id="summary-remaining" class="text-slate-800 font-bold">0 ج.م</span>
+                            </div>
+                        </div>
+
+                        <button onclick="submitInvoice()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 transition">
+                            <i data-lucide="printer" class="w-5 h-5"></i>
+                            <span>إصدار الفاتورة والطباعة 🖨️</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: INVENTORY -->
+            <div id="tab-content-inventory" class="hidden space-y-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <select id="inv-cat-select" onchange="renderInventoryTable()" class="text-xs bg-slate-50 border border-slate-300 rounded-lg px-3 py-2">
+                            <option value="all">كل الأصناف</option>
+                            <option value="ps4">أجهزة PS4</option>
+                            <option value="ps5">أجهزة PS5</option>
+                            <option value="controller_ps4_orig">دراعات PS4 أصلي</option>
+                            <option value="controller_ps4_copy">دراعات PS4 كوبي</option>
+                            <option value="controller_ps5_orig">دراعات PS5 أصلي</option>
+                            <option value="controller_ps5_copy">دراعات PS5 كوبي</option>
+                        </select>
+                        <input type="text" id="inv-search-term" onkeyup="renderInventoryTable()" placeholder="بحث في المخزون بالاسم أو السيريال..." class="text-xs bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 min-w-[240px]">
+                    </div>
+                    <span id="inv-count-badge" class="text-xs bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg font-bold">0 صنف</span>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-xs">
+                            <thead class="bg-slate-50 text-slate-600 font-bold border-b">
+                                <tr>
+                                    <th class="p-3">الصنف / الجهاز</th>
+                                    <th class="p-3">الموديل والمساحة</th>
+                                    <th class="p-3">الحالة / السيريال</th>
+                                    <th class="p-3">سعر البيع</th>
+                                    <th class="p-3 text-center">الكمية</th>
+                                    <th class="p-3 text-center">إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-tbody" class="divide-y divide-slate-100">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: INVOICES -->
+            <div id="tab-content-invoices" class="hidden space-y-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4">
+                    <input type="text" id="invoices-search-term" onkeyup="renderInvoicesTable()" placeholder="بحث برقم الفاتورة أو اسم العميل..." class="text-xs bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 min-w-[300px]">
+                    <span id="invoices-count-badge" class="text-xs bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg font-bold">0 فاتورة</span>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-xs">
+                            <thead class="bg-slate-50 text-slate-600 font-bold border-b">
+                                <tr>
+                                    <th class="p-3">رقم الفاتورة</th>
+                                    <th class="p-3">اسم العميل</th>
+                                    <th class="p-3">رقم الهاتف</th>
+                                    <th class="p-3">التاريخ</th>
+                                    <th class="p-3">الضمان</th>
+                                    <th class="p-3">الإجمالي</th>
+                                    <th class="p-3 text-center">عرض وطباعة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoices-tbody" class="divide-y divide-slate-100">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- MODALS -->
+
+    <!-- Device Bundle Config Modal -->
+    <div id="bundle-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-right space-y-4">
+            <div class="flex items-center justify-between border-b pb-3">
+                <h3 id="bundle-title" class="font-extrabold text-slate-800 text-base">تجهيز مشتملات الجهاز للفاتورة</h3>
+                <button onclick="closeBundleModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">السيريال نمبر للجهاز (S/N)</label>
+                    <input type="text" id="bundle-serial" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg font-mono">
+                </div>
+                <div class="grid grid-cols-2 gap-3 bg-emerald-50/50 p-3 rounded-xl border border-emerald-100">
+                    <div>
+                        <label class="block font-semibold text-emerald-900 mb-1">عدد الدراعات الأصلية:</label>
+                        <input type="number" id="bundle-orig" value="1" min="0" max="4" class="w-full text-center py-1.5 bg-white border border-emerald-200 rounded-lg font-bold">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-emerald-900 mb-1">عدد الدراعات الكوبي:</label>
+                        <input type="number" id="bundle-copy" value="0" min="0" max="4" class="w-full text-center py-1.5 bg-white border border-emerald-200 rounded-lg font-bold">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">المشتملات والكابلات المرفقة</label>
+                    <textarea id="bundle-included" rows="2" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">السعر الإجمالي (ج.م)</label>
+                        <input type="number" id="bundle-price" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg font-bold text-emerald-600">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">الكمية</label>
+                        <input type="number" id="bundle-qty" value="1" min="1" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg font-bold text-center">
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-2 pt-2 border-t">
+                <button onclick="confirmBundle()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow">إضافة للفاتورة</button>
+                <button onclick="closeBundleModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl text-xs">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Item Modal -->
+    <div id="add-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-right space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b pb-3">
+                <h3 class="font-extrabold text-slate-800 text-base">إضافة جهاز / صنف لمخزون الفرع الثاني</h3>
+                <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="saveItem(event)" class="space-y-3 text-xs">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">التصنيف *</label>
+                        <select id="f-cat" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg">
+                            <option value="ps4">جهاز PS4</option>
+                            <option value="ps5">جهاز PS5</option>
+                            <option value="controller_ps4_orig">دراع PS4 أصلي</option>
+                            <option value="controller_ps4_copy">دراع PS4 كوبي</option>
+                            <option value="controller_ps5_orig">دراع PS5 أصلي DualSense</option>
+                            <option value="controller_ps5_copy">دراع PS5 كوبي</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">اسم الصنف *</label>
+                        <input type="text" id="f-name" required placeholder="مثال: PS4 Pro 1TB" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">الموديل</label>
+                        <input type="text" id="f-model" placeholder="Slim, Pro..." class="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">المساحة</label>
+                        <input type="text" id="f-storage" placeholder="1TB, 500GB..." class="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">الحالة</label>
+                        <select id="f-cond" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg">
+                            <option value="جديد متبرشم">جديد متبرشم</option>
+                            <option value="كسر زيرو" selected>كسر زيرو</option>
+                            <option value="مستعمل ممتاز">مستعمل ممتاز</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">الكمية *</label>
+                        <input type="number" id="f-qty" required min="1" value="1" class="w-full text-center py-1.5 bg-white border border-slate-300 rounded-lg font-bold">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">سعر البيع المطلوب *</label>
+                        <input type="number" id="f-price" required min="0" class="w-full text-center py-1.5 bg-white border border-slate-300 rounded-lg font-bold text-emerald-600">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">السيريال نمبر</label>
+                    <input type="text" id="f-serial" placeholder="S/N..." class="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg font-mono">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">المشتملات الافتراضية</label>
+                    <input type="text" id="f-inc" placeholder="دراع أصلي + كابل باور + HDMI" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg">
+                </div>
+                <div class="flex gap-2 pt-2 border-t">
+                    <button type="submit" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow">حفظ في المخزون</button>
+                    <button type="button" onclick="closeAddModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl text-xs">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Printable Invoice Modal -->
+    <div id="invoice-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 text-right space-y-4 max-h-[95vh] overflow-y-auto">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b pb-3 no-print">
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="SystemDB.printInvoice('invoice-print-area')" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black flex items-center gap-2 shadow-lg transition">
+                        <i data-lucide="printer" class="w-4 h-4"></i>
+                        <span>طباعة الفاتورة 🖨️</span>
+                    </button>
+                    <button onclick="SystemDB.shareWhatsApp(currentActiveInvoice)" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black flex items-center gap-2 shadow-lg transition">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                        <span>إرسال عبر الواتس 💬</span>
+                    </button>
+                </div>
+                <button onclick="closeInvoiceModal()" class="text-slate-400 hover:text-slate-600 p-1"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+
+            <!-- Print Area -->
+            <div id="invoice-print-area" class="border border-slate-300 rounded-xl p-6 bg-white space-y-4">
+                <div class="flex items-center justify-between border-b-2 border-slate-900 pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xl">🎮</div>
+                        <div>
+                            <h2 class="text-2xl font-black text-slate-900">المهندس</h2>
+                            <p class="text-xs text-slate-500 font-semibold">لتجارة وصيانة أجهزة ودراعات PlayStation</p>
+                        </div>
+                    </div>
+                    <div class="text-left">
+                        <span class="inline-block bg-slate-900 text-white px-3 py-1 rounded text-xs font-bold uppercase mb-1">فاتورة مبيعات وضمان</span>
+                        <div class="text-xs font-mono font-bold text-slate-700" id="pr-num">INV-000000</div>
+                        <div class="text-[11px] text-slate-500" id="pr-date">2026-08-27</div>
+                        <div class="text-xs font-bold text-emerald-700 mt-1" id="pr-branch">الفرع الثاني</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs">
+                    <div><span class="text-slate-500">اسم العميل: </span><span class="font-bold text-slate-900" id="pr-cust"></span></div>
+                    <div><span class="text-slate-500">رقم الهاتف: </span><span class="font-bold text-slate-900 font-mono" id="pr-phone"></span></div>
+                    <div><span class="text-slate-500">مدة الضمان: </span><span class="font-bold text-emerald-700" id="pr-warranty"></span></div>
+                    <div><span class="text-slate-500">طريقة الدفع: </span><span class="font-bold text-slate-900" id="pr-payment"></span></div>
+                </div>
+
+                <table class="w-full text-right text-xs border border-slate-300">
+                    <thead class="bg-slate-100 font-bold border-b border-slate-300">
+                        <tr>
+                            <th class="p-2 border-l border-slate-300">م</th>
+                            <th class="p-2 border-l border-slate-300">الصنف</th>
+                            <th class="p-2 border-l border-slate-300">تفاصيل المشتملات والدراعات</th>
+                            <th class="p-2 border-l border-slate-300 text-center">الكمية</th>
+                            <th class="p-2 border-l border-slate-300">السعر</th>
+                            <th class="p-2">الإجمالي</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pr-items-tbody" class="divide-y divide-slate-200"></tbody>
+                </table>
+
+                <div class="flex justify-end pt-2">
+                    <div class="w-60 space-y-1 text-xs bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <div class="flex justify-between"><span>المجموع:</span><span class="font-bold" id="pr-subtotal"></span></div>
+                        <div class="flex justify-between text-red-600"><span>الخصم:</span><span class="font-bold" id="pr-discount"></span></div>
+                        <div class="flex justify-between border-t border-slate-300 pt-1 text-sm font-black"><span>الإجمالي:</span><span class="text-emerald-700" id="pr-total"></span></div>
+                        <div class="flex justify-between text-emerald-700 font-bold"><span>المدفوع:</span><span id="pr-paid"></span></div>
+                        <div class="flex justify-between font-semibold"><span>المتبقي:</span><span id="pr-remaining"></span></div>
+                    </div>
+                </div>
+
+                <div class="border-t pt-2 text-[11px] text-slate-600 bg-emerald-50/30 p-2.5 rounded-lg">
+                    <span class="font-bold text-slate-800">🛡️ شروط الضمان: </span>
+                    <span id="pr-terms">الضمان يسري ضد عيوب الصناعة والفاتورة أصل الضمان.</span>
+                </div>
+
+                <!-- Footer Signatures Table -->
+                <table class="w-full border-0 !border-0 text-xs mt-6 signature-table" style="border: none !important; width: 100%;">
+                    <tr style="border: none !important;">
+                        <td style="width: 50%; text-align: right; border: none !important; padding: 0;">
+                            <p style="font-weight: bold; margin-bottom: 25px; font-size: 13px; color: #1e293b;">توقيع المستلم</p>
+                            <p style="border-top: 1px dashed #64748b; width: 140px; margin-right: 0; padding-top: 4px; color: #94a3b8;">.............................</p>
+                        </td>
+                        <td style="width: 50%; text-align: left; border: none !important; padding: 0;">
+                            <p style="font-weight: bold; margin-bottom: 25px; font-size: 13px; color: #1e293b;">ختم وتوقيع الفرع</p>
+                            <p style="border-top: 1px dashed #64748b; width: 140px; margin-left: 0; margin-right: auto; padding-top: 4px; color: #94a3b8;">.............................</p>
+                        </td>
+                    </tr>
+                    <tr style="border: none !important;">
+                        <td colspan="2" style="text-align: center; border: none !important; padding-top: 22px;">
+                            <p style="font-weight: 900; font-size: 13px; color: #1e293b;">شركة المهندس للبلايستيشن</p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Item Modal -->
+    <div id="edit-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 text-right space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b pb-3">
+                <h3 class="font-extrabold text-slate-800 text-base">✏️ تعديل بيانات وسعر الجهاز / الصنف</h3>
+                <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="saveEditedItem(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="edit-id">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">التصنيف *</label>
+                        <select id="edit-cat" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg">
+                            <option value="ps4">جهاز PS4</option>
+                            <option value="ps5">جهاز PS5</option>
+                            <option value="controller_ps4_orig">دراع PS4 أصلي</option>
+                            <option value="controller_ps4_copy">دراع PS4 كوبي</option>
+                            <option value="controller_ps5_orig">دراع PS5 أصلي DualSense</option>
+                            <option value="controller_ps5_copy">دراع PS5 كوبي</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">اسم الصنف / الجهاز *</label>
+                        <input type="text" id="edit-name" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">الموديل</label>
+                        <input type="text" id="edit-model" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">المساحة</label>
+                        <input type="text" id="edit-storage" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">الحالة</label>
+                        <select id="edit-cond" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg">
+                            <option value="جديد متبرشم">جديد متبرشم</option>
+                            <option value="كسر زيرو">كسر زيرو</option>
+                            <option value="مستعمل ممتاز">مستعمل ممتاز</option>
+                            <option value="مستعمل بحالة جيدة">مستعمل بحالة جيدة</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 bg-emerald-50/40 p-3 rounded-xl border border-emerald-100">
+                    <div>
+                        <label class="block font-bold text-slate-800 mb-1">الكمية المتوفرة *</label>
+                        <input type="number" id="edit-qty" required min="0" class="w-full text-center py-2 bg-white border border-slate-300 rounded-lg font-black text-sm">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-800 mb-1">سعر البيع (ج.م) *</label>
+                        <input type="number" id="edit-price" required min="0" class="w-full text-center py-2 bg-white border border-slate-300 rounded-lg font-black text-sm text-emerald-600">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">السيريال نمبر</label>
+                    <input type="text" id="edit-serial" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg font-mono">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">المشتملات المرفقة</label>
+                    <input type="text" id="edit-inc" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg">
+                </div>
+                <div class="flex gap-2 pt-2 border-t">
+                    <button type="submit" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow">حفظ التعديلات ✅</button>
+                    <button type="button" onclick="closeEditModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl text-xs">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script for Branch 2 -->
+    <script>
+        const BRANCH_ID = 2;
+        let activeTab = 'pos';
+        let currentCategory = 'all';
+        let cart = [];
+        let tempItem = null;
+        let currentActiveInvoice = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            const saved = sessionStorage.getItem('logged_branch_2');
+            if (saved) {
+                showBranchApp();
+            }
+        });
+
+        // Realtime Cloud Sync Reactive Listener
+        window.addEventListener('system-db-updated', () => {
+            if (activeTab === 'pos') renderCatalog();
+            else if (activeTab === 'inventory') renderInventoryTable();
+            else if (activeTab === 'invoices') renderInvoicesTable();
+        });
+
+        function handleBranchLogin() {
+            const pass = document.getElementById('login-pass').value;
+            const res = SystemDB.login(BRANCH_ID, pass);
+            if (res.success) {
+                sessionStorage.setItem('logged_branch_2', 'true');
+                showBranchApp();
+            } else {
+                const err = document.getElementById('login-err');
+                err.textContent = res.message;
+                err.classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('login-pass')?.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') handleBranchLogin();
+        });
+
+        function branchLogout() {
+            sessionStorage.removeItem('logged_branch_2');
+            document.getElementById('branch-app-box').classList.add('hidden');
+            document.getElementById('auth-header-badge').classList.add('hidden');
+            document.getElementById('branch-login-box').classList.remove('hidden');
+            document.getElementById('login-pass').value = '';
+        }
+
+        function showBranchApp() {
+            document.getElementById('branch-login-box').classList.add('hidden');
+            document.getElementById('auth-header-badge').classList.remove('hidden');
+            document.getElementById('branch-app-box').classList.remove('hidden');
+            setTab('pos');
+        }
+
+        function setTab(tab) {
+            activeTab = tab;
+            ['pos', 'inventory', 'invoices'].forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                const box = document.getElementById(`tab-content-${t}`);
+                if (t === tab) {
+                    btn.className = 'flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition bg-emerald-600 text-white shadow-md';
+                    box.classList.remove('hidden');
+                } else {
+                    btn.className = 'flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition text-slate-600 hover:bg-slate-100';
+                    box.classList.add('hidden');
+                }
+            });
+
+            if (tab === 'pos') renderCatalog();
+            else if (tab === 'inventory') renderInventoryTable();
+            else if (tab === 'invoices') renderInvoicesTable();
+            lucide.createIcons();
+        }
+
+        function filterCat(cat, btn) {
+            currentCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(b => {
+                b.className = 'cat-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200';
+            });
+            btn.className = 'cat-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white';
+            renderCatalog();
+        }
+
+        function renderCatalog() {
+            const search = (document.getElementById('catalog-search')?.value || '').toLowerCase().trim();
+            const items = SystemDB.getInventory(BRANCH_ID, currentCategory, search);
+            const grid = document.getElementById('catalog-grid');
+
+            if (items.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-10 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">لا توجد أجهزة أو أصناف مطابقة</div>`;
+                return;
+            }
+
+            grid.innerHTML = items.map(item => {
+                const isOutOfStock = item.quantity <= 0;
+                const isDevice = item.category === 'ps4' || item.category === 'ps5';
+                return `
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border ${isOutOfStock ? 'border-red-200 opacity-80' : 'border-slate-200 hover:border-emerald-400'} flex flex-col justify-between relative group transition">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">${item.category}</span>
+                                    <button onclick="openEditModal(${item.id})" title="تعديل السعر والكمية" class="px-2 py-0.5 bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-700 rounded-md text-[11px] font-bold transition flex items-center gap-1">
+                                        <span>✏️ تعديل</span>
+                                    </button>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="SystemDB.adjustStock(${item.id}, -1); renderCatalog();" title="تقليل الكمية" class="w-5 h-5 flex items-center justify-center bg-slate-100 hover:bg-slate-200 rounded font-bold text-xs">-</button>
+                                    <span class="text-[11px] font-bold px-2 py-0.5 rounded ${isOutOfStock ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-800'}">
+                                        ${isOutOfStock ? 'نفذت' : `متوفر: ${item.quantity}`}
+                                    </span>
+                                    <button onclick="SystemDB.adjustStock(${item.id}, 1); renderCatalog();" title="زيادة الكمية" class="w-5 h-5 flex items-center justify-center bg-slate-100 hover:bg-slate-200 rounded font-bold text-xs">+</button>
+                                </div>
+                            </div>
+                            <h4 class="font-bold text-slate-800 text-sm mb-1">${item.name}</h4>
+                            <div class="text-[11px] text-slate-500 space-y-0.5 mb-2">
+                                ${item.storage ? `<div>مساحة: ${item.storage}</div>` : ''}
+                                ${item.condition ? `<div>حالة: ${item.condition}</div>` : ''}
+                                ${item.serial_number ? `<div class="font-mono text-slate-400">S/N: ${item.serial_number}</div>` : ''}
+                            </div>
+                        </div>
+                        <div class="pt-3 border-t flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-1 cursor-pointer" onclick="openEditModal(${item.id})" title="اضغط لتعديل السعر">
+                                <span class="font-black text-emerald-600 text-base">${item.sell_price.toLocaleString()} ج.م</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="openEditModal(${item.id})" title="تعديل السعر والكمية" class="p-1.5 bg-slate-100 hover:bg-emerald-100 text-emerald-600 rounded-xl text-xs font-bold transition">
+                                    ✏️
+                                </button>
+                                <button onclick="handleItemClick(${item.id})" ${isOutOfStock ? 'disabled' : ''} class="px-3 py-1.5 ${isOutOfStock ? 'bg-slate-200 text-slate-400' : 'bg-emerald-600 hover:bg-emerald-700 text-white'} rounded-xl text-xs font-bold shadow-sm transition">
+                                    ${isDevice ? 'تجهيز وإضافة' : 'إضافة للفاتورة'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function handleItemClick(id) {
+            const item = SystemDB.getInventory(BRANCH_ID).find(i => i.id === id);
+            if (!item) return;
+            if (item.category === 'ps4' || item.category === 'ps5') {
+                tempItem = item;
+                document.getElementById('bundle-title').textContent = `تجهيز: ${item.name}`;
+                document.getElementById('bundle-serial').value = item.serial_number || '';
+                document.getElementById('bundle-orig').value = 1;
+                document.getElementById('bundle-copy').value = 0;
+                document.getElementById('bundle-included').value = item.included_items || 'دراع أصلي + كابل باور + كابل HDMI + كابل شحن';
+                document.getElementById('bundle-price').value = item.sell_price;
+                document.getElementById('bundle-qty').value = 1;
+                document.getElementById('bundle-modal').classList.remove('hidden');
+            } else {
+                addItemDirectly(item);
+            }
+        }
+
+        function closeBundleModal() {
+            document.getElementById('bundle-modal').classList.add('hidden');
+            tempItem = null;
+        }
+
+        function confirmBundle() {
+            if (!tempItem) return;
+            const serial = document.getElementById('bundle-serial').value.trim();
+            const orig = parseInt(document.getElementById('bundle-orig').value) || 0;
+            const copy = parseInt(document.getElementById('bundle-copy').value) || 0;
+            const inc = document.getElementById('bundle-included').value.trim();
+            const price = parseFloat(document.getElementById('bundle-price').value) || tempItem.sell_price;
+            const qty = parseInt(document.getElementById('bundle-qty').value) || 1;
+
+            let ctrls = [];
+            if (orig > 0) ctrls.push(`${orig} دراع أصلي`);
+            if (copy > 0) ctrls.push(`${copy} دراع كوبي`);
+            const details = `${ctrls.join(' + ')}${inc ? ` | ${inc}` : ''}`;
+
+            cart.push({
+                inventory_id: tempItem.id,
+                item_name: tempItem.name,
+                category: tempItem.category,
+                item_type: 'device',
+                serial_number: serial,
+                original_controllers_count: orig,
+                copy_controllers_count: copy,
+                included_details: details,
+                quantity: qty,
+                unit_price: price,
+                total_price: price * qty
+            });
+
+            closeBundleModal();
+            renderCart();
+        }
+
+        function addItemDirectly(item) {
+            const ex = cart.find(c => c.inventory_id === item.id && c.item_type !== 'device');
+            if (ex) {
+                ex.quantity += 1;
+                ex.total_price = ex.quantity * ex.unit_price;
+            } else {
+                cart.push({
+                    inventory_id: item.id,
+                    item_name: item.name,
+                    category: item.category,
+                    item_type: 'controller',
+                    serial_number: item.serial_number || '',
+                    original_controllers_count: item.category.includes('orig') ? 1 : 0,
+                    copy_controllers_count: item.category.includes('copy') ? 1 : 0,
+                    included_details: item.category.includes('orig') ? 'أصلي' : 'هاي كوبي درجة أولى',
+                    quantity: 1,
+                    unit_price: item.sell_price,
+                    total_price: item.sell_price
+                });
+            }
+            renderCart();
+        }
+
+        function renderCart() {
+            const list = document.getElementById('cart-list');
+            if (cart.length === 0) {
+                list.innerHTML = `<p class="text-center py-6 text-xs text-slate-400">الفاتورة فارغة. اضغط على أي جهاز لإضافته.</p>`;
+                recalcTotals();
+                return;
+            }
+            list.innerHTML = cart.map((it, idx) => `
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs flex flex-col gap-1">
+                    <div class="flex justify-between items-start">
+                        <span class="font-bold text-slate-800">${it.item_name}</span>
+                        <button onclick="cart.splice(${idx}, 1); renderCart()" class="text-red-400 hover:text-red-600">×</button>
+                    </div>
+                    ${it.included_details ? `<span class="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">${it.included_details}</span>` : ''}
+                    <div class="flex justify-between items-center pt-1 border-t">
+                        <span>الكمية: ${it.quantity}</span>
+                        <span class="font-bold text-emerald-600">${it.total_price.toLocaleString()} ج.م</span>
+                    </div>
+                </div>
+            `).join('');
+            recalcTotals();
+        }
+
+        function recalcTotals() {
+            const subtotal = cart.reduce((s, it) => s + it.total_price, 0);
+            const discount = parseFloat(document.getElementById('summary-discount').value) || 0;
+            const total = Math.max(0, subtotal - discount);
+            const paidInp = document.getElementById('summary-paid');
+            if (parseFloat(paidInp.value) === 0 && total > 0) paidInp.value = total;
+            const paid = parseFloat(paidInp.value) || 0;
+            const rem = Math.max(0, total - paid);
+
+            document.getElementById('summary-subtotal').textContent = `${subtotal.toLocaleString()} ج.م`;
+            document.getElementById('summary-total').textContent = `${total.toLocaleString()} ج.م`;
+            document.getElementById('summary-remaining').textContent = `${rem.toLocaleString()} ج.م`;
+        }
+
+        function clearCart() {
+            cart = [];
+            document.getElementById('cust-name').value = '';
+            document.getElementById('cust-phone').value = '';
+            document.getElementById('summary-discount').value = 0;
+            document.getElementById('summary-paid').value = 0;
+            renderCart();
+        }
+
+        function submitInvoice() {
+            if (cart.length === 0) return alert('أضف أجهزة أو دراعات أولاً');
+            const name = document.getElementById('cust-name').value.trim();
+            if (!name) return alert('أدخل اسم العميل');
+
+            const invoice = SystemDB.createInvoice({
+                branch_id: BRANCH_ID,
+                customer_name: name,
+                customer_phone: document.getElementById('cust-phone').value.trim(),
+                items: cart,
+                discount: parseFloat(document.getElementById('summary-discount').value) || 0,
+                paid_amount: parseFloat(document.getElementById('summary-paid').value) || 0,
+                payment_method: document.getElementById('cart-payment').value,
+                warranty_period: document.getElementById('cart-warranty').value,
+                created_by: 'كاشير الفرع الثاني'
+            });
+
+            clearCart();
+            renderCatalog();
+            openInvoiceModal(invoice);
+        }
+
+        function openInvoiceModal(inv) {
+            currentActiveInvoice = inv;
+            const settings = SystemDB.getSettings();
+            document.getElementById('pr-num').textContent = inv.invoice_number;
+            document.getElementById('pr-date').textContent = new Date(inv.created_at).toLocaleDateString('ar-EG');
+            document.getElementById('pr-branch').textContent = inv.branch_name;
+            document.getElementById('pr-cust').textContent = inv.customer_name;
+            document.getElementById('pr-phone').textContent = inv.customer_phone || '-';
+            document.getElementById('pr-warranty').textContent = inv.warranty_period;
+            document.getElementById('pr-payment').textContent = inv.payment_method;
+
+            document.getElementById('pr-items-tbody').innerHTML = inv.items.map((it, idx) => `
+                <tr>
+                    <td class="p-2 border-l text-center font-bold">${idx + 1}</td>
+                    <td class="p-2 border-l font-bold">${it.item_name}</td>
+                    <td class="p-2 border-l">${it.included_details || '-'}</td>
+                    <td class="p-2 border-l text-center font-bold">${it.quantity}</td>
+                    <td class="p-2 border-l">${it.unit_price.toLocaleString()} ج.م</td>
+                    <td class="p-2 font-black text-emerald-700">${it.total_price.toLocaleString()} ج.م</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('pr-subtotal').textContent = `${inv.subtotal.toLocaleString()} ج.م`;
+            document.getElementById('pr-discount').textContent = `${inv.discount.toLocaleString()} ج.م`;
+            document.getElementById('pr-total').textContent = `${inv.total_amount.toLocaleString()} ج.م`;
+            document.getElementById('pr-paid').textContent = `${inv.paid_amount.toLocaleString()} ج.م`;
+            document.getElementById('pr-remaining').textContent = `${inv.remaining_amount.toLocaleString()} ج.م`;
+            document.getElementById('pr-terms').textContent = inv.warranty_terms;
+
+            document.getElementById('invoice-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeInvoiceModal() {
+            document.getElementById('invoice-modal').classList.add('hidden');
+        }
+
+        // Inventory Table
+        function renderInventoryTable() {
+            const cat = document.getElementById('inv-cat-select').value;
+            const search = document.getElementById('inv-search-term').value;
+            const items = SystemDB.getInventory(BRANCH_ID, cat, search);
+            document.getElementById('inv-count-badge').textContent = `${items.length} صنف مسجل`;
+
+            document.getElementById('inventory-tbody').innerHTML = items.map(item => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-3 font-bold text-slate-800">${item.name}</td>
+                    <td class="p-3 text-slate-600">${item.model_type || '-'} ${item.storage || ''}</td>
+                    <td class="p-3 font-mono text-slate-500">${item.serial_number || item.condition || '-'}</td>
+                    <td class="p-3 font-black text-emerald-600">${item.sell_price.toLocaleString()} ج.م</td>
+                    <td class="p-3 text-center">
+                        <button onclick="SystemDB.adjustStock(${item.id}, -1); renderInventoryTable()" class="px-2 py-0.5 bg-slate-200 hover:bg-slate-300 rounded font-bold">-</button>
+                        <span class="px-2 font-bold">${item.quantity}</span>
+                        <button onclick="SystemDB.adjustStock(${item.id}, 1); renderInventoryTable()" class="px-2 py-0.5 bg-slate-200 hover:bg-slate-300 rounded font-bold">+</button>
+                    </td>
+                    <td class="p-3 text-center space-x-1 space-x-reverse">
+                        <button onclick="openEditModal(${item.id})" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded text-xs font-bold transition">✏️ تعديل</button>
+                        <button onclick="if(confirm('حذف هذا الصنف؟')){SystemDB.deleteInventoryItem(${item.id}); renderInventoryTable(); renderCatalog();}" class="px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded text-xs font-bold transition">حذف</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openAddModal() { document.getElementById('add-modal').classList.remove('hidden'); }
+        function closeAddModal() { document.getElementById('add-modal').classList.add('hidden'); }
+
+        function openEditModal(id) {
+            const item = SystemDB.getInventory(BRANCH_ID).find(i => i.id === Number(id));
+            if (!item) return;
+            document.getElementById('edit-id').value = item.id;
+            document.getElementById('edit-cat').value = item.category;
+            document.getElementById('edit-name').value = item.name;
+            document.getElementById('edit-model').value = item.model_type || '';
+            document.getElementById('edit-storage').value = item.storage || '';
+            document.getElementById('edit-cond').value = item.condition || 'كسر زيرو';
+            document.getElementById('edit-qty').value = item.quantity;
+            document.getElementById('edit-price').value = item.sell_price;
+            document.getElementById('edit-serial').value = item.serial_number || '';
+            document.getElementById('edit-inc').value = item.included_items || '';
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.add('hidden');
+        }
+
+        function saveEditedItem(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            SystemDB.updateInventoryItem(id, {
+                category: document.getElementById('edit-cat').value,
+                name: document.getElementById('edit-name').value.trim(),
+                model_type: document.getElementById('edit-model').value.trim(),
+                storage: document.getElementById('edit-storage').value.trim(),
+                condition: document.getElementById('edit-cond').value,
+                quantity: Number(document.getElementById('edit-qty').value),
+                sell_price: Number(document.getElementById('edit-price').value),
+                serial_number: document.getElementById('edit-serial').value.trim(),
+                included_items: document.getElementById('edit-inc').value.trim()
+            });
+            closeEditModal();
+            renderInventoryTable();
+            renderCatalog();
+            alert('تم تعديل بيانات وسعر الجهاز بنجاح! ✅');
+        }
+
+        function saveItem(e) {
+            e.preventDefault();
+            SystemDB.addInventoryItem({
+                branch_id: BRANCH_ID,
+                category: document.getElementById('f-cat').value,
+                name: document.getElementById('f-name').value.trim(),
+                model_type: document.getElementById('f-model').value.trim(),
+                storage: document.getElementById('f-storage').value.trim(),
+                condition: document.getElementById('f-cond').value,
+                quantity: document.getElementById('f-qty').value,
+                sell_price: document.getElementById('f-price').value,
+                serial_number: document.getElementById('f-serial').value.trim(),
+                included_items: document.getElementById('f-inc').value.trim()
+            });
+            closeAddModal();
+            renderInventoryTable();
+            renderCatalog();
+        }
+
+        // Invoices Table
+        function renderInvoicesTable() {
+            const search = document.getElementById('invoices-search-term').value;
+            const invoices = SystemDB.getInvoices(BRANCH_ID, search);
+            document.getElementById('invoices-count-badge').textContent = `${invoices.length} فاتورة`;
+
+            document.getElementById('invoices-tbody').innerHTML = invoices.map(inv => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-3 font-mono font-bold text-emerald-700">${inv.invoice_number}</td>
+                    <td class="p-3 font-bold">${inv.customer_name}</td>
+                    <td class="p-3 font-mono">${inv.customer_phone || '-'}</td>
+                    <td class="p-3 text-slate-500">${new Date(inv.created_at).toLocaleDateString('ar-EG')}</td>
+                    <td class="p-3 text-emerald-700 font-semibold">${inv.warranty_period}</td>
+                    <td class="p-3 font-black text-slate-900">${inv.total_amount.toLocaleString()} ج.م</td>
+                    <td class="p-3 text-center">
+                        <button onclick="openInvoiceModal(SystemDB.getInvoiceById(${inv.id}))" class="px-2.5 py-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded text-xs font-bold">عرض</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
