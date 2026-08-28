@@ -1,18 +1,18 @@
-/**
+﻿/**
  * Al-Mohandess PlayStation Management System - Firebase Realtime Cloud Sync + Local Cache
  * نظام المزامنة السحابية اللحظية (Firebase Realtime Database)
  * يربط جميع الفروع والتليفون واللابتوب في نفس اللحظة فوراً
  */
 
 const FIREBASE_CONFIG = {
-    apiKey: "AIzaSyDzVKuAx8tBvC3VQGp3XGiPbEjjD2TTyDc",
-    authDomain: "system-el-serag-1.firebaseapp.com",
-    databaseURL: "https://system-el-serag-1-default-rtdb.firebaseio.com",
-    projectId: "system-el-serag-1",
-    storageBucket: "system-el-serag-1.firebasestorage.app",
-    messagingSenderId: "909135709654",
-    appId: "1:909135709654:web:7d0d387b0549fc670c9077",
-    measurementId: "G-98VB9JQJ6E"
+    apiKey: "AIzaSyAPwRfPgSj9flgu6vYv1OrkQSaLaw7iXlg",
+    authDomain: "system-cb60b.firebaseapp.com",
+    databaseURL: "https://system-cb60b-default-rtdb.firebaseio.com",
+    projectId: "system-cb60b",
+    storageBucket: "system-cb60b.firebasestorage.app",
+    messagingSenderId: "452567924583",
+    appId: "1:452567924583:web:3281d0c71095e97bd2f9c2",
+    measurementId: "G-JX9FZG22RZ"
 };
 
 let fbApp = null;
@@ -20,7 +20,7 @@ let fbDb = null;
 let isCloudConnected = false;
 
 try {
-    if (typeof firebase !== 'undefined' && FIREBASE_CONFIG) {
+    if (typeof firebase !== 'undefined') {
         if (!firebase.apps.length) {
             fbApp = firebase.initializeApp(FIREBASE_CONFIG);
         } else {
@@ -28,16 +28,16 @@ try {
         }
         fbDb = firebase.database();
         isCloudConnected = true;
-        console.log("🔥 Firebase Connected for Branch 2 (السراج)!");
+        console.log("🔥 Branch 2 connected to Central Firebase Database!");
     }
 } catch (err) {
-    console.warn("Firebase local mode active:", err);
+    console.warn("Firebase not loaded yet, using local cache:", err);
 }
 
 const STORAGE_KEY_BRANCHES = 'elmohandess_branches_db';
-const STORAGE_KEY_INVENTORY = 'elmohandess_inventory_db';
-const STORAGE_KEY_INVOICES = 'elmohandess_invoices_db';
-const STORAGE_KEY_TRANSFERS = 'elmohandess_transfers_db';
+const STORAGE_KEY_INVENTORY = 'elmohandess_b2_inventory_db';
+const STORAGE_KEY_INVOICES = 'elmohandess_b2_invoices_db';
+const STORAGE_KEY_TRANSFERS = 'elmohandess_b2_transfers_db';
 const STORAGE_KEY_SETTINGS = 'elmohandess_settings_db';
 
 // Initial Seed Data
@@ -56,30 +56,21 @@ const DEFAULT_SETTINGS = {
 };
 
 const DEFAULT_INVENTORY = [
-    { id: 1, branch_id: 1, category: 'ps4', name: 'PlayStation 4 Slim 1TB', model_type: 'Slim', storage: '1TB', system_version: 'معدل 9.00', condition: 'كسر زيرو', color: 'أسود', serial_number: 'PS4-SLM-1001', quantity: 3, buy_price: 11500, sell_price: 13500, included_items: 'دراع أصلي + كابل باور + كابل HDMI + كابل شحن', notes: 'بحالة ممتازة محمل بأحدث الألعاب' },
-    { id: 2, branch_id: 1, category: 'ps5', name: 'PlayStation 5 Slim Digital 1TB', model_type: 'Slim Digital', storage: '1TB', system_version: 'أصلي', condition: 'جديد متبرشم', color: 'أبيض', serial_number: 'PS5-DIG-2001', quantity: 2, buy_price: 24000, sell_price: 27500, included_items: 'دراع أصلي DualSense + كابلات أصلية بالكرتونة', notes: 'إصدار الشرق الأوسط' },
-    { id: 3, branch_id: 1, category: 'controller_ps4_orig', name: 'دراع PS4 أصلي DualShock 4', model_type: 'DualShock 4', storage: '', system_version: 'أصلي', condition: 'كسر زيرو', color: 'أسود', serial_number: 'CTRL-PS4-O1', quantity: 10, buy_price: 850, sell_price: 1100, included_items: '', notes: 'أصلي' },
-    { id: 4, branch_id: 1, category: 'controller_ps4_copy', name: 'دراع PS4 هاي كوبي درجة أولى', model_type: 'High Copy', storage: '', system_version: 'كوبي', condition: 'جديد', color: 'أزرق', serial_number: 'CTRL-PS4-C1', quantity: 15, buy_price: 380, sell_price: 550, included_items: '', notes: 'أعلى خامة كوبي' },
-    { id: 5, branch_id: 1, category: 'controller_ps5_orig', name: 'دراع PS5 أصلي DualSense', model_type: 'DualSense', storage: '', system_version: 'أصلي', condition: 'جديد متبرشم', color: 'أبيض', serial_number: 'CTRL-PS5-O1', quantity: 6, buy_price: 2600, sell_price: 3100, included_items: '', notes: 'أصلي توكيل' },
-    { id: 6, branch_id: 1, category: 'controller_ps5_copy', name: 'دراع PS5 كوبي درجة أولى', model_type: 'Copy', storage: '', system_version: 'كوبي', condition: 'جديد', color: 'أسود', serial_number: 'CTRL-PS5-C1', quantity: 8, buy_price: 850, sell_price: 1200, included_items: '', notes: 'كوبي ممتاز' },
-
-    // Branch 2 (ID 2)
     { id: 7, branch_id: 2, category: 'ps4', name: 'PlayStation 4 Pro 1TB 4K', model_type: 'Pro', storage: '1TB', system_version: 'أصلي أونلاين', condition: 'مستعمل ممتاز', color: 'أسود', serial_number: 'PS4-PRO-2002', quantity: 2, buy_price: 13000, sell_price: 15500, included_items: '2 دراع أصلي + كابلات + علبة', notes: 'يدعم 4K وسلس جدا' },
     { id: 8, branch_id: 2, category: 'ps5', name: 'PlayStation 5 Fat Disc 825GB', model_type: 'Fat Disc', storage: '825GB', system_version: 'أصلي', condition: 'كسر زيرو', color: 'أبيض', serial_number: 'PS5-FAT-2003', quantity: 1, buy_price: 23000, sell_price: 26000, included_items: 'دراع أصلي + كابل HDMI 2.1', notes: 'نسخة السي دي' },
     { id: 9, branch_id: 2, category: 'controller_ps4_orig', name: 'دراع PS4 أصلي DualShock 4', model_type: 'DualShock 4', storage: '', system_version: 'أصلي', condition: 'جديد', color: 'أحمر', serial_number: 'CTRL-PS4-O2', quantity: 5, buy_price: 900, sell_price: 1200, included_items: '', notes: 'لون مميز' },
     { id: 10, branch_id: 2, category: 'controller_ps4_copy', name: 'دراع PS4 هاي كوبي درجة أولى', model_type: 'High Copy', storage: '', system_version: 'كوبي', condition: 'جديد', color: 'أسود', serial_number: 'CTRL-PS4-C2', quantity: 12, buy_price: 380, sell_price: 550, included_items: '', notes: 'كوبي درجة أولى' },
-    { id: 11, branch_id: 2, category: 'controller_ps5_orig', name: 'دراع PS5 أصلي DualSense', model_type: 'DualSense', storage: '', system_version: 'أصلي', condition: 'جديد', color: 'بنفسجي Galactic Purple', serial_number: 'CTRL-PS5-O2', quantity: 4, buy_price: 2700, sell_price: 3200, included_items: '', notes: 'أصلي إصدار ملون' },
-
-    // Branch 3 (ID 3)
-    { id: 12, branch_id: 3, category: 'ps4', name: 'PlayStation 4 Fat 500GB', model_type: 'Fat', storage: '500GB', system_version: 'معدل 11.00', condition: 'مستعمل بحالة جيدة', color: 'أسود', serial_number: 'PS4-FAT-3001', quantity: 2, buy_price: 9000, sell_price: 10500, included_items: 'دراع أصلي + دراع كوبي + كابلات', notes: 'محمل 10 ألعاب' },
-    { id: 13, branch_id: 3, category: 'ps5', name: 'PlayStation 5 Slim Disc 1TB', model_type: 'Slim Disc', storage: '1TB', system_version: 'أصلي', condition: 'جديد متبرشم', color: 'أبيض', serial_number: 'PS5-SLM-3002', quantity: 3, buy_price: 27000, sell_price: 30500, included_items: 'دراع أصلي + كابلات بالكرتونة', notes: 'ضمان محلي' },
-    { id: 14, branch_id: 3, category: 'controller_ps4_orig', name: 'دراع PS4 أصلي DualShock 4', model_type: 'DualShock 4', storage: '', system_version: 'أصلي', condition: 'كسر زيرو', color: 'كاموفلاج Camo', serial_number: 'CTRL-PS4-O3', quantity: 7, buy_price: 880, sell_price: 1150, included_items: '', notes: 'نسخة أصلية مموهة' },
-    { id: 15, branch_id: 3, category: 'controller_ps4_copy', name: 'دراع PS4 هاي كوبي درجة أولى', model_type: 'High Copy', storage: '', system_version: 'كوبي', condition: 'جديد', color: 'أبيض', serial_number: 'CTRL-PS4-C3', quantity: 20, buy_price: 380, sell_price: 550, included_items: '', notes: 'كوبي ممتاز' },
-    { id: 16, branch_id: 3, category: 'controller_ps5_orig', name: 'دراع PS5 أصلي DualSense', model_type: 'DualSense', storage: '', system_version: 'أصلي', condition: 'جديد', color: 'أسود Midnight Black', serial_number: 'CTRL-PS5-O3', quantity: 5, buy_price: 2600, sell_price: 3100, included_items: '', notes: 'أصلي بالكرتونة' },
-    { id: 17, branch_id: 3, category: 'controller_ps5_copy', name: 'دراع PS5 كوبي درجة أولى', model_type: 'Copy', storage: '', system_version: 'كوبي', condition: 'جديد', color: 'أبيض', serial_number: 'CTRL-PS5-C2', quantity: 6, buy_price: 850, sell_price: 1200, included_items: '', notes: 'كوبي درجة أولى' }
+    { id: 11, branch_id: 2, category: 'controller_ps5_orig', name: 'دراع PS5 أصلي DualSense', model_type: 'DualSense', storage: '', system_version: 'أصلي', condition: 'جديد', color: 'بنفسجي Galactic Purple', serial_number: 'CTRL-PS5-O2', quantity: 4, buy_price: 2700, sell_price: 3200, included_items: '', notes: 'أصلي إصدار ملون' }
 ];
 
 let isInitialized = false;
+
+function toArray(data) {
+    if (!data) return [];
+    if (Array.isArray(data)) return data.filter(Boolean);
+    if (typeof data === 'object') return Object.values(data).filter(Boolean);
+    return [];
+}
 
 const SystemDB = {
     init() {
@@ -113,28 +104,28 @@ const SystemDB = {
     setupCloudSync() {
         if (!fbDb) return;
 
-        // 1. Inventory Sync
-        fbDb.ref('inventory').on('value', snapshot => {
-            const data = snapshot.val();
-            if (data && Array.isArray(data)) {
-                localStorage.setItem(STORAGE_KEY_INVENTORY, JSON.stringify(data));
-                this.notifyUI();
-            } else if (data === null) {
-                // Seed cloud with initial data
-                const current = JSON.parse(localStorage.getItem(STORAGE_KEY_INVENTORY) || JSON.stringify(DEFAULT_INVENTORY));
-                fbDb.ref('inventory').set(current);
+        // 1. Branch 2 Inventory Sync
+        fbDb.ref('branch_2/inventory').on('value', snapshot => {
+            const arr = toArray(snapshot.val());
+            if (arr.length > 0) {
+                localStorage.setItem(STORAGE_KEY_INVENTORY, JSON.stringify(arr));
+            } else {
+                localStorage.setItem(STORAGE_KEY_INVENTORY, JSON.stringify(DEFAULT_INVENTORY));
+                fbDb.ref('branch_2/inventory').set(DEFAULT_INVENTORY);
             }
+            this.notifyUI();
         });
 
-        // 2. Invoices Sync
-        fbDb.ref('invoices').on('value', snapshot => {
-            const data = snapshot.val();
-            if (data && Array.isArray(data)) {
+        // 2. Branch 2 Invoices Sync
+        fbDb.ref('branch_2/invoices').on('value', snapshot => {
+            const raw = snapshot.val();
+            if (raw !== null) {
+                const data = toArray(raw);
                 localStorage.setItem(STORAGE_KEY_INVOICES, JSON.stringify(data));
                 this.notifyUI();
-            } else if (data === null) {
+            } else {
                 const current = JSON.parse(localStorage.getItem(STORAGE_KEY_INVOICES) || '[]');
-                fbDb.ref('invoices').set(current);
+                fbDb.ref('branch_2/invoices').set(current);
             }
         });
 
@@ -152,11 +143,12 @@ const SystemDB = {
 
         // 4. Branches Sync
         fbDb.ref('branches').on('value', snapshot => {
-            const data = snapshot.val();
-            if (data && Array.isArray(data)) {
+            const raw = snapshot.val();
+            if (raw !== null) {
+                const data = toArray(raw);
                 localStorage.setItem(STORAGE_KEY_BRANCHES, JSON.stringify(data));
                 this.notifyUI();
-            } else if (data === null) {
+            } else {
                 const current = JSON.parse(localStorage.getItem(STORAGE_KEY_BRANCHES) || JSON.stringify(DEFAULT_BRANCHES));
                 fbDb.ref('branches').set(current);
             }
@@ -164,11 +156,12 @@ const SystemDB = {
 
         // 5. Transfers Sync
         fbDb.ref('transfers').on('value', snapshot => {
-            const data = snapshot.val();
-            if (data && Array.isArray(data)) {
+            const raw = snapshot.val();
+            if (raw !== null) {
+                const data = toArray(raw);
                 localStorage.setItem(STORAGE_KEY_TRANSFERS, JSON.stringify(data));
                 this.notifyUI();
-            } else if (data === null) {
+            } else {
                 const current = JSON.parse(localStorage.getItem(STORAGE_KEY_TRANSFERS) || '[]');
                 fbDb.ref('transfers').set(current);
             }
@@ -178,7 +171,13 @@ const SystemDB = {
     pushToCloud(key, data) {
         if (fbDb) {
             try {
-                fbDb.ref(key).set(data);
+                if (key === 'inventory') {
+                    fbDb.ref('branch_2/inventory').set(data);
+                } else if (key === 'invoices') {
+                    fbDb.ref('branch_2/invoices').set(data);
+                } else {
+                    fbDb.ref(key).set(data);
+                }
             } catch (e) {
                 console.error("Cloud push failed:", e);
             }
